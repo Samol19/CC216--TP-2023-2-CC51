@@ -14,6 +14,9 @@ Alumnos:
 
 Objetivo del trabajo:
 
+El objetivo del proyecto es realizar un análisis exploratorio de un conjunto de datos (EDA) sobre un dataset de Hotel Booking Demand, creando visualizaciones gráficas, preparando los datos y obteniendo inferencias a partir de esas para responder una serie de preguntas.
+
+
 Descripición del dataset: 
 
 Este proyecto realiza un análisis exploratorio del conjunto de datos "Hotel Booking Demand", sobre el dataset hemos realizado un descripción de la estructura de los datos, incluyendo el nombre de cada campo, el tipo de dato esperado, una breve definición y, cuando es relevante, los valores permitidos. Además, se mencionó que existen valores nulos (NA) y datos atípicos (outliers) en el conjunto de datos.
