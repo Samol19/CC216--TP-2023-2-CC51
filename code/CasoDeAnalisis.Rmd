@@ -1,0 +1,191 @@
+setwd("C:/Users/USER/Desktop/TP")
+library(ggplot2)
+library(dplyr)
+data<-read.csv('data_limpia.csv',header=TRUE,stringsAsFactors = FALSE,)
+
+
+#A. ¿Cuántas reservas se realizan por tipo de hotel? o ¿Qué tipo de hotel prefiere la gente?
+ 
+  #Usamos la biblioteca "GGplot2" y procedemos a usar la función ggplot con las variables de hotel
+ ggplot(data,aes(x=hotel))+
+ geom_bar( fill = "blue")+
+ labs(title = "Reservas de hoteles",
+ 	    x = "Nombre del hotel",
+  	   y = "Cantidad de Reservas") 
+ #Tabulamos y vemos la cantidad de personas que prefiere un hotel que el otro.
+tabulate(as.factor(data$arrival_date_year))
+
+#B. ¿Está aumentando la demanda con el tiempo?
+ #Procedemos a usar la variable arrival_date_year para sacar una conclusión sobre la cantidad de  demanda por año.
+ #Usamos la biblioteca "GGplot2" y procedemos a usar la función ggplot con las variables de año de  reserva
+ ggplot(data, aes(x = arrival_date_year,)) +
+   geom_bar(fill="blue") +
+   labs(title = "Variación de la Variable en el Tiempo", x = "Fecha", y = "Demanda")
+ #Tabulamos y vemos la cantidad de demanda por el año donde se realizó la reserva.
+ tabulate(as.factor(data$arrival_date_year))
+ 
+ 
+ 
+
+#C. ¿Cuándo se producen las temporadas de reservas: alta, media y baja?
+ hotel_bookings<-read.csv('data_limpia.csv',header=TRUE,stringsAsFactors = FALSE,)
+ # Asegurarse de que la columna de meses esté en un formato adecuado
+ hotel_bookings$arrival_date_month <- factor(hotel_bookings$arrival_date_month, levels = month.name)
+ 
+ # Mapear "Yes" a 1 y "No" a 0 en la columna is_canceled
+ hotel_bookings$is_canceled <- ifelse(hotel_bookings$is_canceled == "Yes", 1, 0)
+ 
+ library(dplyr)
+ 
+ # Agrupar por mes y calcular la cantidad de reservas canceladas y no canceladas
+ monthly_summary <- hotel_bookings %>%
+   group_by(arrival_date_month, is_canceled) %>%
+   summarise(count = n())
+ 
+ # Filtrar solo las reservas no canceladas (is_canceled == 0)
+ monthly_summary <- monthly_summary %>% filter(is_canceled == 0)
+ 
+ # Ordenar los meses por la cantidad de reservas no canceladas en orden descendente
+ monthly_summary <- monthly_summary %>%
+   arrange(desc(count))
+ 
+ # Identificar las temporadas
+ high_season <- head(monthly_summary, 1)  # Temporada alta 
+ medium_season <- monthly_summary[6, ]   # Temporada media 
+ low_season <- tail(monthly_summary, 1)    # Temporada baja 
+ 
+ library(ggplot2)
+ 
+ # Identificar los meses representativos de cada temporada
+ high_month <- high_season$arrival_date_month[1]
+ medium_month <- medium_season$arrival_date_month[1]
+ low_month <- low_season$arrival_date_month[1]
+ 
+ # Visualizar las temporadas con etiquetas solo en la más alta, media y más baja
+ ggplot(data = monthly_summary, aes(x = arrival_date_month, y = count)) +
+   geom_bar(stat = "identity", fill = "blue") +
+   labs(title = "Temporadas de Reservas",
+        x = "Mes",
+        y = "Cantidad de Reservas") +
+   scale_x_discrete(labels = month.name) +
+   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+   geom_text(data = high_season, aes(x = as.numeric(high_season$arrival_date_month[1]), 
+                                     y = max(monthly_summary$count), label = "Temporada Alta"),
+             vjust = -0.5, size = 4, color = "green") +
+   geom_text(data = medium_season, aes(x = as.numeric(medium_season$arrival_date_month[1]), 
+                                       y = median(monthly_summary$count), label = "Temporada Media"),
+             vjust = -0.5, size = 4, color = "#8B7500") +
+   geom_text(data = low_season, aes(x = as.numeric(low_season$arrival_date_month[1]), 
+                                    y = min(monthly_summary$count), label = "Temporada Baja"),
+             vjust = -0.5, size = 4, color = "red")
+ 
+ 
+ 
+data.limpia<-read.csv('data_limpia.csv',header=TRUE,stringsAsFactors = FALSE,) 
+#d.¿Cuándo es menor la demanda de reservas? 
+ library(ggplot2)
+ # Calcular la demanda mensual de reservas en data.limpia
+ demand_mensual <- table(data.limpia$arrival_date_month)
+ # Encontrar el mes con la menor demanda
+ mes_menor_demanda <- names(sort(demand_mensual))[1]
+ demand_mensual <- table(data.limpia$arrival_date_month)
+ # Crear una nueva columna "resaltar"
+ data.limpia$resaltar <- ifelse(data.limpia$arrival_date_month == mes_menor_demanda, "sí", "no")
+ # Crear un gráfico de barras para la demanda mensual
+ ggplot(data = data.limpia, aes(x = arrival_date_month, fill = resaltar)) +
+   geom_bar() +
+   scale_fill_manual(values = c("no" = "snow4", "sí" = "red")) +  # Cambiar colores
+   labs(
+     title = "Demanda Mensual de Reservas",
+     x = "Mes de Llegada",
+     y = "Cantidad de Reservas"
+   ) +
+   theme_minimal()
+   
+#E. ¿Cuántas reservas incluyen niños y/o bebes?
+  #cargar el archivo csv
+  data <- read.csv("data_limpia.csv")
+  #ahora haremos una limpieza de los datos
+  data <- data[!is.na(data$children) & !is.na(data$babies),]
+  data$children<- as.numeric(data$children)
+  data$babies <- as.numeric(data$babies)
+  boxplot(data$children, main = "Boxplot de la variable children")
+  boxplot(data$babies, main = "Boxplot de la variable babies")
+  #filtrar la cantidad de reservas con niños y/o bebes
+  reservas_con_ninos_o_bebes <- data[data$children > 0 | data$babies > 0, ]
+  #obtener el numero de reservas que incluyen niños y/o bebes 
+  num_reservas_con_ninos_o_bebes <- nrow(reservas_con_ninos_o_bebes)
+  #visualizacion de la respuesta
+  install.packages("ggplot2")
+  library(ggplot2)
+  ggplot(data = reservas_con_ninos_o_bebes, aes(x = "Reservas con Niños/Bebés")) +
+    geom_bar(fill = "red") +
+    labs(title = "Número de Reservas con Niños/Bebés") +
+    theme_minimal()
+  #y para comparar con las reservas que no tienen niños y/o bebes
+  num_sin_ninos_o_bebes <- nrow(data) - num_reservas_con_ninos_o_bebes
+  df <- data.frame(
+    Categoría = c("Con Niños/Bebés", "Sin Niños/Bebés"),
+    Número = c(num_reservas_con_ninos_o_bebes, num_sin_ninos_o_bebes)
+  )
+  ggplot(df, aes(x = "", y = Número, fill = Categoría)) +
+    geom_bar(stat = "identity") +
+    labs(title = "Reservas con Niños/Bebés vs. Reservas sin Niños/Bebés") +
+    coord_polar(theta = "y") +
+    theme_minimal()
+ 
+#F. ¿Es importante contar con espacios de estacionamiento?
+ # Calcular el total de personas que necesitan estacionamiento (1) y el total que no lo necesita (0)
+ personas_con_estacionamiento <- sum(data.limpia$required_car_parking_spaces == 1)
+ personas_sin_estacionamiento <- sum(data.limpia$required_car_parking_spaces == 0)
+ # Crear un vector con los valores
+ valores <- c("Si necesitan", "No necesitan")
+ conteo <- c(personas_con_estacionamiento, personas_sin_estacionamiento)
+ total_personas <- nrow(data.limpia)
+ # Calcular los porcentajes
+ porcentaje_con_estacionamiento <- (personas_con_estacionamiento / total_personas) * 100
+ porcentaje_sin_estacionamiento <- (personas_sin_estacionamiento / total_personas) * 100
+ # Crear un vector con los porcentajes y etiquetas
+ porcentajes <- c(porcentaje_con_estacionamiento, porcentaje_sin_estacionamiento)
+ etiquetas <- paste(valores, ": ", round(porcentajes, 2), "%", sep="")
+ # Crear el gráfico circular con etiquetas de porcentaje
+ pie(porcentajes, labels = etiquetas, col = c("green", "red"), main = "Porcentaje de personas que  necesitan estacionamiento")
+ 
+#G. ¿En qué meses del año se producen más cancelaciones de reservas?
+ # Crear un gráfico de barras apiladas para mostrar el porcentaje de cancelaciones por mes
+library(ggplot2)
+
+ggplot(data, aes(x = factor(arrival_date_month, levels = meses_ordenados), fill = is_canceled)) +
+  geom_bar() +
+  labs(
+    title = "Porcentaje de Cancelaciones de Reservas por Mes (Todos los Años)",
+    x = "Mes",
+    y = "Porcentaje"
+  ) +
+  scale_fill_manual(values = c("No" = "blue", "Sí" = "red")) +  # Colores personalizados
+  theme_minimal()
+ 
+#H. ¿Cuál es la duración promedio en días de las estadías por tipo de hotel?
+ # Cargar las bibliotecas necesarias
+ library(dplyr)
+ library(ggplot2)
+ #Calcular la duración de las estadías
+ hotel_bookings <- hotel_bookings %>%
+   mutate(total_stay_duration = stays_in_weekend_nights + stays_in_week_nights)
+ # Calcular la duración promedio de la estadía por tipo de hotel
+ average_stay_duration <- hotel_bookings %>%
+   group_by(hotel) %>%
+   summarise(avg_stay_duration = mean(total_stay_duration))
+ # Crear y personalizar la gráfica de barras
+ ggplot(data = average_stay_duration, aes(x = hotel, y = avg_stay_duration, fill = hotel)) +
+   geom_bar(stat = "identity") + labs(title = "Duración Promedio de Estadías por Tipo de Hotel",
+   x = "Tipo de Hotel", y = "Duración Promedio en dias") + theme_minimal() + 
+   geom_text(aes(label=round(avg_stay_duration, 2)), vjust=-0.5, size=4, position =        position_stack(vjust = 0.5))
+   
+#I.¿Qué tipo de cliente es el más habitual, dentro de la demanda?
+  #Usamos la biblioteca "GGplot2" y procedemos a usar la función ggplot con las variables de customer_type
+ ggplot(data,aes(x=customer_type))+
+ geom_bar( fill = "blue")+
+ labs(title = "Demanda por tipo de clientes",
+ 	    x = "Tipo de Cliente",
+  	   y = "Cantidad de Reservas") 
