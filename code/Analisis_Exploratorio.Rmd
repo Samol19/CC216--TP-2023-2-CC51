@@ -1,0 +1,204 @@
+
+#CARGAR DATOS
+
+ #Procedemos a seleccionar el directorio de trabajo
+setwd("C:/Users/USER/Desktop/TP")
+
+ #Cargar los datos del dataset csv al objeto "data" dentro de la carpeta de trabajo, se consideran los parametros header = TRUE y stringsAsFactors = FALSE.
+ 
+data<-read.csv('hotel_bookings.csv',header=TRUE,stringsAsFactors = FALSE,)
+
+#INSPECCIONAR DATOS
+
+ #Ver dataset en modelo de tabla(estructura)
+ View(data)
+ 
+  #Ver el numero de filas y columnas en total
+ nrow(data)
+ ncol(data)
+ 
+ #Ver todas las variables del dataset (nombre de columnas)
+ names(data)
+ 
+ #Ver la estructura del conjunto de datos(tipo de datos, n° de filas, samples)
+ str(data)
+ 
+ #Ejecutamos las 4 primeras y ultimas filas del dataset
+ head(data,4)
+ tail(data,4)
+ 
+ #Resumen de cada variable de la tabla
+ summary(data)
+ 
+ sapply(data,class)
+
+
+#PREPROCESADO
+#Identificar valores nulos
+ #Cambiar objetos vacios por '', equivalente a NA
+ data.limpia<-read.csv('hotel_bookings.csv',header=TRUE,stringsAsFactors = FALSE,na.strings='')
+ 
+ #Cambiar objetos de valor NULL por NA.
+ 
+ 
+ #Crear arreglos que guarden indices encontrados por la función which que coincida con valores nulos
+ iNULL<-which(data.limpia=="NULL",arr.ind=TRUE) #NULL
+ data.limpia[iNULL]<-NA
+ 
+ iNA<-which(data.limpia=="NA",arr.ind=TRUE)   #NA
+ data.limpia[iNA]<-NA
+ 
+ iUN<-which(data.limpia=="Undefined",arr.ind=TRUE)  #Undefined
+ data.limpia[iUN]<-NA
+ 
+ 
+ #Identificar total de valores nulos
+ sum(is.na(data.limpia))
+ 
+ #Crear indice que identifique las columnas con valores nulos
+ iNA<-(colSums(is.na(data.limpia)) > 0)
+ colNULL <- colnames(data.limpia[iNA])
+ print(colNULL)
+
+
+#Remplazar datos nulos
+
+ #Country
+ 
+ #Remplazar valores de Country por la moda
+ #unique <-retorna un vector con filas o culumnas duplicadas removidas
+ #tabulate<- contador
+ #match<-busca la posición de un elemento en un vector y retorna su posición.
+ getmode <- function(x) {
+    uniqx <- unique(x)
+    uniqx[which.max(tabulate(match(uniqx, x)))]
+  }
+ moda<-getmode(data.limpia$country)
+ 
+ 
+ #Remplazamos los valores vacios por la moda
+ data.limpia$country[is.na(data.limpia$country)]<-moda
+ #verificamos los datos nulos en country
+ sum(is.na(data.limpia$country))
+ 
+ 
+ #Children
+ #Visualizamos los datos totales de children NA respecto al dataset completo
+ sum(is.na(data.limpia$children))
+ #Procedemos a ver lo que representa del total del dataset
+ 100*sum(is.na(data.limpia$children))/nrow(data.limpia)
+ #Vemos que representa menos del 1%, por lo que vemos viable omitir estas filas dentro del dataset
+ data.limpia<-data.limpia[!is.na(data.limpia$children),]
+ #Visualizamos los datos totales de children respecto al dataset completo
+ sum(is.na(data.limpia$children))
+ 
+ 
+ #Distribution_channel
+ #Visualizamos los datos totales de children NA respecto al dataset completo
+ sum(is.na(data.limpia$distribution_channel))
+ #Procedemos a ver lo que representa del total del dataset
+ 100*sum(is.na(data.limpia$distribution_channel))/nrow(data.limpia)
+ #Vemos que representa menos del 1%, por lo que vemos viable omitir estas filas dentro del dataset
+ data.limpia<-data.limpia[!is.na(data.limpia$distribution_channel),]
+ #Visualizamos los datos totales de children respecto al dataset completo
+ sum(is.na(data.limpia$children))
+ 
+ #Meal
+ #Visualizamos los datos totales de children NA respecto al dataset completo
+ sum(is.na(data.limpia$meal))
+ #Debido a su clase character procedemos a remplazarlo por la moda
+ moda<-getmode(data.limpia$meal)
+ #Remplazamos los valores vacios por la moda
+ data.limpia$meal[is.na(data.limpia$meal)]<-moda
+ #verificamos los datos nulos en country
+ sum(is.na(data.limpia$meal))
+ 
+ 
+ #Visualizamos nuevamente los datos que nos faltan
+ iNA<-(colSums(is.na(data.limpia)) > 0)
+ colNULL <- colnames(data.limpia[iNA])
+ print(colNULL)
+ 
+ #Nos damos cuenta que solo quedan 2 columnas, agent y company.
+ cat("Compañia tiene un total de :",sum(is.na(data.limpia$company)), " y agents  ",sum(is.na(data.limpia$agent)))
+ #Debido a que compañia tiene un gran numero de valores nulos en el dataset y va de la mano como  agente vemos factible eliminar ambas columnas del dataset.
+ data.limpia$company<-NULL
+ data.limpia$agent<-NULL
+ 
+ 
+ 
+ #Visualizamos nuevamente los datos que nos faltan
+ iNA<-(colSums(is.na(data.limpia)) > 0)
+ colNULL <- colnames(data.limpia[iNA])
+ print(colNULL)
+ 
+ #Vemos que no reconoce algun dato faltante, por lo que terminamos la parte de limpieza
+
+
+#OUTLIERS
+#Identificar outliers
+ 
+ recorrido<-function(){
+ for (i in 1:ncol(data.limpia)){
+ if(is.numeric(data.limpia[,i])){
+ a<-boxplot.stats(data.limpia[,i])
+ if(length(a$out)>0)
+ {
+ cat("La fila ",colnames(data.limpia[i])," ",i," tiene outliers\n")
+ }}}
+ }
+ 
+ #Vemos los posibles outliers y analizamos cuales se transformaran
+ recorrido()
+ 
+ #Creamos una función para ver los detalles de esos posibles outliers.
+ recorrido2<-function(){
+ for (i in 1:ncol(data.limpia)){
+ if(is.numeric(data.limpia[,i])){
+ a<-boxplot.stats(data.limpia[,i])
+ if(length(a$out)>0)
+ {
+ cat("La columna ",colnames(data.limpia[i])," ",i,": ",unique(data.limpia[,i]),"\n")
+ boxplot(data.limpia[,i],main=colnames(data.limpia[i])) #generar boxplot
+ 
+ }}}
+ }
+ 
+ recorrido2()
+ 
+ 
+ #Corregimos las variables como factores(0 o 1)
+ 
+ data.limpia$is_canceled <- as.factor(ifelse(data.limpia$is_canceled == 1, "Yes", "No"))
+ data.limpia$is_repeated_guest <- as.factor(ifelse(data.limpia$is_repeated_guest == 1, "Yes", "No"))
+ recorrido()
+ 
+ #Identificamos los unicos valores a transformar:
+ #adr   26
+
+#Transformar outliers
+ convert <- function(x){
+ b<-boxplot.stats(x)
+ while(length(b$out)>0){
+ b<-boxplot.stats(x)
+   for(i in 1:nrow(data.limpia)){
+   if(x[i] %in% b$out){
+     x[i]<-b$stats[3] #Q2=50%
+   } }
+ }
+   return(x)
+ }
+ 
+ #Aplicamos la funciona  la columna identificada
+ 
+ data.limpia[,26]<-convert(data.limpia[,26])
+ 
+ #Correcion valores puntuales
+ 
+ #Babies
+ iB<-which(data.limpia$babies>2,arr.ind=TRUE)  
+ data.limpia$babies[iB]<-2
+ #Adults
+ iA<-which(data.limpia$adults>4,arr.ind=TRUE)   
+ data.limpia$adults[iA]<-4
+ 
